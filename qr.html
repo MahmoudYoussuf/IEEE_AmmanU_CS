@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Follow Us QR Codes</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      background: linear-gradient(135deg, #191c24 0%, #23243a 100%);
+      margin: 0;
+      min-height: 100vh;
+      color: #e6e6f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .container {
+      background: #23243a;
+      border-radius: 18px;
+      padding: 48px 36px;
+      box-shadow: 0 8px 32px rgba(20, 20, 40, 0.45);
+      text-align: center;
+      max-width: 1200px;
+      width: 100%;
+      border: 1px solid #23243a;
+    }
+    h2 {
+      color: #ffb86c;
+      font-size: 36px;
+      margin-bottom: 25px;
+      margin-top: 0;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px #23243a88;
+    }
+    .qr-container {
+      display: flex;
+      gap: 60px;
+      justify-content: center;
+      align-items: flex-end;
+      margin: 30px 0 10px 0;
+    }
+    .qr-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #23243a;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px #191c2480;
+      padding: 24px 18px;
+    }
+    .qr-block img {
+      width: 44vw;
+      max-width: 400px;
+      min-width: 180px;
+      height: auto;
+      aspect-ratio: 1/1;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px #44475a;
+      background: #181926;
+      border: 2px solid #44475a;
+    }
+    .qr-label {
+      margin-top: 16px;
+      color: #ffb86c;
+      font-size: 22px;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px #23243a88;
+    }
+    .desc {
+      color: #bfcbe6;
+      font-size: 18px;
+      margin-top: 18px;
+      text-align: center;
+    }
+    .back-btn {
+      margin-top: 30px;
+      padding: 14px 32px;
+      background: linear-gradient(90deg, #ff9800 0%, #ff5e62 100%);
+      color: #fff;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.2s;
+      font-weight: 500;
+      box-shadow: 0 2px 8px #ff98001a;
+    }
+    .back-btn:hover {
+      background: linear-gradient(90deg, #ff5e62 0%, #ff9800 100%);
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Follow Us</h2>
+    <div class="qr-container">
+      <div class="qr-block">
+        <img src="insta-qr.jpg" alt="Instagram QR" />
+        <div class="qr-label">Instagram</div>
+      </div>
+      <div class="qr-block">
+        <img src="dino-qr.jpg" alt="Participatation Form" />
+        <div class="qr-label">Participatation Form</div>
+      </div>
+    </div>
+    <!-- <div class="desc">Scan the QR codes to follow us!</div> -->
+    <button class="back-btn" onclick="window.history.back()">Back</button>
+  </div>
+</body>
+</html>

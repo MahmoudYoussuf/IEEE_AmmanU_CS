@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tic Tac Toe Duel</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #23243a 0%, #191c24 100%);
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    .container {
+      background: #23243a;
+      border-radius: 24px;
+      box-shadow: 0 12px 48px 0 #000a, 0 2px 8px #ff98001a;
+      padding: 40px 24px;
+      text-align: center;
+      min-width: 340px;
+      max-width: 520px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+    h1 {
+      color: #ffb86c;
+      font-size: 3.2em;
+      margin-bottom: 24px;
+      letter-spacing: 3px;
+      text-shadow: 0 4px 16px #191c2480;
+    }
+    .scoreboard {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #fff;
+      text-shadow: 0 2px 8px #23243a88;
+    }
+    .status {
+      font-size: 1.5em;
+      margin-bottom: 24px;
+      min-height: 40px;
+      color: #bfcbe6;
+      text-shadow: 0 2px 8px #23243a88;
+      letter-spacing: 1px;
+    }
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 14px;
+      justify-content: center;
+      margin: 32px 0 18px 0;
+      position: relative;
+      z-index: 2;
+    }
+    .cell {
+      background: #191c24;
+      border: 3px solid #44475a;
+      border-radius: 14px;
+      font-size: 2.8em;
+      color: #ffb86c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+      user-select: none;
+      font-weight: bold;
+      box-shadow: 0 4px 24px #191c2480;
+      position: relative;
+      overflow: hidden;
+      min-width: 100px;
+      min-height: 100px;
+      max-width: 100px;
+      max-height: 100px;
+    }
+    .cell:hover {
+      background: #282a36;
+      color: #fff;
+      box-shadow: 0 0 24px #ffb86c55;
+    }
+    .cell.win {
+      background: linear-gradient(135deg, #28a745 60%, #23243a 100%);
+      color: #fff;
+      box-shadow: 0 0 32px #28a74599, 0 4px 24px #191c2480;
+      animation: win-cell 0.7s;
+    }
+    @keyframes win-cell {
+      0% { box-shadow: 0 0 0 #28a74500; }
+      50% { box-shadow: 0 0 32px #28a74599; }
+      100% { box-shadow: 0 0 0 #28a74500; }
+    }
+    .cell.draw {
+      background: linear-gradient(135deg, #bfcbe6 60%, #23243a 100%);
+      color: #23243a;
+      box-shadow: 0 0 32px #bfcbe699, 0 4px 24px #191c2480;
+      animation: draw-cell 0.7s;
+    }
+    @keyframes draw-cell {
+      0% { box-shadow: 0 0 0 #bfcbe600; }
+      50% { box-shadow: 0 0 32px #bfcbe699; }
+      100% { box-shadow: 0 0 0 #bfcbe600; }
+    }
+    button {
+      padding: 18px 44px;
+      background: linear-gradient(90deg, #ff9800 0%, #ff5e62 100%);
+      color: #fff;
+      font-size: 1.3em;
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      margin-top: 18px;
+      margin-bottom: 0;
+      transition: background 0.3s, transform 0.2s;
+      font-weight: 500;
+      box-shadow: 0 2px 8px #ff98001a;
+      z-index: 2;
+      position: relative;
+    }
+    button + button {
+      margin-left: 18px;
+    }
+    button:hover {
+      background: linear-gradient(90deg, #ff5e62 0%, #ff9800 100%);
+      transform: scale(1.06);
+    }
+    /* Particle container */
+    .particle-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 100;
+    }
+    .particle {
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: particle-animation 1.3s ease-out forwards;
+    }
+    @keyframes particle-animation {
+      0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--x), var(--y)) scale(0.5);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Tic Tac Toe Duel</h1>
+    <div class="scoreboard">
+      <span id="scoreX">Player X: 0</span>
+      <span id="scoreO">Player O: 0</span>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="board" id="board"></div>
+    <button onclick="restartGame()" style="margin-top:20px;">Restart</button>
+    <button onclick="window.location.href='index.html'" style="margin-top:20px;">Home</button>
+  </div>
+  <div class="particle-container" id="particle-container"></div>
+  <script>
+    let board = Array(9).fill('');
+    let currentPlayer = 'X';
+    let gameActive = true;
+    let score = { X: 0, O: 0 };
+    let winCells = [];
+
+    const winPatterns = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+
+    function renderBoard() {
+      const boardDiv = document.getElementById('board');
+      boardDiv.innerHTML = '';
+      board.forEach((cell, idx) => {
+        const cellDiv = document.createElement('div');
+        cellDiv.className = 'cell';
+        cellDiv.textContent = cell;
+        if (winCells.includes(idx)) cellDiv.classList.add('win');
+        if (gameActive === false && !winCells.length && board.every(c => c)) cellDiv.classList.add('draw');
+        cellDiv.onclick = () => handleMove(idx);
+        boardDiv.appendChild(cellDiv);
+      });
+    }
+
+    function setStatus(msg) {
+      document.getElementById('status').textContent = msg;
+    }
+
+    function handleMove(idx) {
+      if (!gameActive || board[idx]) return;
+      board[idx] = currentPlayer;
+      renderBoard();
+      const win = checkWin(currentPlayer);
+      if (win) {
+        winCells = win;
+        renderBoard();
+        setStatus(`🎉 Player ${currentPlayer} wins!`);
+        score[currentPlayer]++;
+        updateScoreboard();
+        gameActive = false;
+        createParticles(currentPlayer === 'X' ? '#ffb86c' : '#ff5e62');
+      } else if (board.every(cell => cell)) {
+        setStatus("It's a draw!");
+        gameActive = false;
+        createParticles('#bfcbe6');
+        renderBoard();
+      } else {
+        currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        setStatus(`Player ${currentPlayer}'s turn`);
+      }
+    }
+
+    function checkWin(player) {
+      for (const pattern of winPatterns) {
+        if (pattern.every(idx => board[idx] === player)) return pattern;
+      }
+      return null;
+    }
+
+    function updateScoreboard() {
+      document.getElementById('scoreX').textContent = `Player X: ${score.X}`;
+      document.getElementById('scoreO').textContent = `Player O: ${score.O}`;
+    }
+
+    function restartGame() {
+      board = Array(9).fill('');
+      gameActive = true;
+      winCells = [];
+      currentPlayer = (score.X + score.O) % 2 === 0 ? 'X' : 'O';
+      setStatus(`Player ${currentPlayer}'s turn`);
+      renderBoard();
+    }
+
+    // Particle effect for win/draw
+    function createParticles(color) {
+      const container = document.getElementById('particle-container');
+      container.innerHTML = '';
+      for (let i = 0; i < 40; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.background = color;
+        particle.style.left = `${50 + Math.random() * 40 - 20}%`;
+        particle.style.top = `${40 + Math.random() * 20 - 10}%`;
+        particle.style.setProperty('--x', `${(Math.random() - 0.5) * 600}px`);
+        particle.style.setProperty('--y', `${(Math.random() - 0.5) * 400}px`);
+        container.appendChild(particle);
+      }
+      setTimeout(() => { container.innerHTML = ''; }, 1400);
+    }
+
+    // Initial render
+    updateScoreboard();
+    restartGame();
+  </script>
+</body>
+</html>

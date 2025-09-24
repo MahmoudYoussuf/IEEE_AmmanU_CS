@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wordle Game</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', 'Arial', sans-serif;
+      background: linear-gradient(135deg, #191c24 0%, #23243a 100%);
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #e6e6f0;
+    }
+
+    .container {
+      background: #23243a;
+      border-radius: 18px;
+      padding: 48px 36px;
+      box-shadow: 0 8px 32px rgba(20, 20, 40, 0.45);
+      text-align: center;
+      max-width: 520px;
+      width: 100%;
+      border: 1px solid #23243a;
+    }
+
+    h1 {
+      font-size: 44px;
+      color: #ffb86c;
+      margin-bottom: 18px;
+      letter-spacing: 2px;
+      text-shadow: 0 2px 8px #23243a88;
+    }
+
+    p {
+      font-size: 19px;
+      color: #bfcbe6;
+      margin-bottom: 24px;
+    }
+
+    input {
+      width: 100%;
+      padding: 18px;
+      font-size: 19px;
+      margin-top: 18px;
+      border: 2px solid #44475a;
+      border-radius: 12px;
+      outline: none;
+      background: #23243a;
+      color: #e6e6f0;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    input:focus {
+      border-color: #ffb86c;
+      background: #23243a;
+    }
+
+    button {
+      padding: 18px 36px;
+      background: linear-gradient(90deg, #ff9800 0%, #ff5e62 100%);
+      color: #fff;
+      font-size: 19px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      margin-top: 18px;
+      transition: background 0.3s, transform 0.2s;
+      font-weight: 500;
+      box-shadow: 0 2px 8px #ff98001a;
+    }
+
+    button:disabled {
+      background: #44475a;
+      color: #aaa;
+      cursor: not-allowed;
+    }
+
+    button:hover:not(:disabled) {
+      background: linear-gradient(90deg, #ff5e62 0%, #ff9800 100%);
+      transform: scale(1.04);
+    }
+
+    .game-section {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 22px;
+    }
+
+    #guesses {
+      margin-bottom: 22px;
+    }
+
+    .guess-row {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .letter {
+      width: 56px;
+      height: 56px;
+      margin: 7px;
+      font-size: 26px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #44475a;
+      border-radius: 12px;
+      background: #23243a;
+      color: #ffb86c;
+      transition: transform 0.2s, background 0.3s;
+      box-shadow: 0 2px 8px #191c2480;
+    }
+
+    .letter:hover {
+      transform: scale(1.1);
+      cursor: context-menu;
+      background: #282a36;
+    }
+
+    input::placeholder {
+      color: #888ca3;
+    }
+
+    h2 {
+      color: #ffb86c;
+      margin-bottom: 22px;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 8px #23243a88;
+    }
+
+    .flex-buttons {
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+      margin-top: 18px;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #23243a;
+      color: #ffb86c;
+      padding: 28px 38px;
+      border-radius: 14px;
+      box-shadow: 0 6px 32px #191c24cc;
+      z-index: 1000;
+      text-align: center;
+      border: 1px solid #44475a;
+    }
+
+    .modal button {
+      margin-top: 18px;
+      padding: 12px 28px;
+      background: linear-gradient(90deg, #ff9800 0%, #ff5e62 100%);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 17px;
+      transition: background 0.3s;
+    }
+
+    .modal button:hover {
+      background: linear-gradient(90deg, #ff5e62 0%, #ff9800 100%);
+    }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(20, 20, 40, 0.65);
+      z-index: 999;
+    }
+
+    /* Winning effect */
+    .win-effect {
+      animation: win-animation 1s ease-in-out;
+      background: #2d4c2d !important;
+    }
+
+    /* Losing effect */
+    .lose-effect {
+      animation: lose-animation 1s ease-in-out;
+      background: #4c2d2d !important;
+    }
+
+    @keyframes win-animation {
+      0% { background: #23243a; }
+      50% { background: #2d4c2d; }
+      100% { background: #23243a; }
+    }
+
+    @keyframes lose-animation {
+      0% { background: #23243a; }
+      50% { background: #4c2d2d; }
+      100% { background: #23243a; }
+    }
+
+    /* Particle container */
+    .particle-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 1000;
+    }
+
+    .particle {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      animation: particle-animation 1.5s ease-out forwards;
+    }
+
+    @keyframes particle-animation {
+      0% {
+        transform: translate(0, 0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--x), var(--y)) scale(0.5);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100vw; height: 100vh; min-height: 100vh; background: none;">
+    <div style="background: #23243a; border-radius: 16px; padding: 12px 36px; box-shadow: 0 4px 24px #191c2480; display: flex; align-items: center; margin-right: 60px;">
+      <img src="ieee-logo.png" alt="IEEE Sponsor Logo" style="height: 80px; margin: 0; filter: drop-shadow(0 0 12px #ffb86c);">
+    </div>
+    <div class="container">
+      <div id="login-section">
+        <h1>Wordle Game</h1>
+        <p>Enter your University ID to start playing!</p>
+        <input type="text" id="student-id" placeholder="Enter your ID" autocomplete="off" />
+        <div style="display: flex; gap: 16px; justify-content: center; margin-top: 18px;">
+          <button onclick="startGame()">Start Game</button>
+          <button onclick="window.location.href='index.html'">Home</button>
+        </div>
+      </div>
+      <div id="wordle-section" class="game-section" style="display: none;">
+        <h2>Guess the Word</h2>
+        <div id="guesses"></div>
+        <input id="guess-input" type="text" maxlength="5" placeholder="Enter 5 letter word" autocomplete="off" />
+        <button id="submit-btn" disabled>Submit Guess</button>
+        <div class="flex-buttons">
+          <button onclick="resetGame()">New Round</button>
+          <button onclick="switchPlayer()">New Player</button>
+          <button onclick="window.location.href='index.html'">Home</button>
+        </div>
+      </div>
+    </div>
+    <div style="background: #23243a; border-radius: 16px; padding: 12px 36px; box-shadow: 0 4px 24px #191c2480; display: flex; align-items: center; margin-left: 60px;">
+      <img src="cs-logo.png" alt="AAU Sponsor Logo" style="height: 80px; margin: 0; filter: drop-shadow(0 0 12px #ff5e62);">
+    </div>
+  </div>
+  <div class="modal-overlay" id="modal-overlay"></div>
+  <div class="modal" id="modal">
+    <p id="modal-message"></p>
+    <button onclick="closeModal()">OK</button>
+  </div>
+
+  <div class="particle-container" id="particle-container"></div>
+  <script>
+    // Define word list with categories and hints
+    const wordList = [
+      { word: 'ARRAY', category: 'Programming', hint: 'A data structure for storing elements in order.' },
+      { word: 'STACK', category: 'Programming', hint: 'LIFO data structure.' },
+      { word: 'QUEUE', category: 'Programming', hint: 'FIFO data structure.' },
+      { word: 'LOOPS', category: 'Programming', hint: 'Used for repeating code blocks.' },
+      { word: 'DEBUG', category: 'Programming', hint: 'Process of finding and fixing errors.' },
+      { word: 'LOGIC', category: 'Programming', hint: 'Reasoning conducted according to strict principles.' },
+      { word: 'PRINT', category: 'Programming', hint: 'Command to display output.' },
+      { word: 'VIRUS', category: 'Security', hint: 'Malicious software that replicates itself.' },
+      { word: 'CACHE', category: 'Hardware', hint: 'Fast memory for frequently accessed data.' },
+      { word: 'INPUT', category: 'General', hint: 'Data provided to a program.' },
+      { word: 'BYTES', category: 'General', hint: 'A group of 8 bits.' },
+      { word: 'CLOUD', category: 'Technology', hint: 'Remote servers for data storage and computing.' },
+      { word: 'TOKEN', category: 'Security', hint: 'A piece of data used for authentication.' },
+      { word: 'QUERY', category: 'Database', hint: 'A request for information from a database.' },
+      { word: 'CLASS', category: 'Programming', hint: 'Blueprint for creating objects in OOP.' },
+      { word: 'BATCH', category: 'General', hint: 'Processing jobs in groups.' },
+      { word: 'FRAME', category: 'Networking', hint: 'A data packet at the data link layer.' },
+      { word: 'BLOCK', category: 'Blockchain', hint: 'A group of transactions in a blockchain.' },
+      { word: 'CRASH', category: 'General', hint: 'Unexpected program termination.' },
+      { word: 'LOGIN', category: 'Security', hint: 'Process to access a system.' },
+      { word: 'PATCH', category: 'Security', hint: 'Update to fix vulnerabilities.' },
+      { word: 'ROBOT', category: 'Technology', hint: 'A machine capable of carrying out tasks.' },
+      { word: 'PIXEL', category: 'Graphics', hint: 'Smallest unit of a digital image.' },
+      { word: 'CHIPS', category: 'Hardware', hint: 'Integrated circuits in computers.' },
+      { word: 'CODES', category: 'Programming', hint: 'Instructions written for computers.' },
+      { word: 'ERROR', category: 'General', hint: 'A mistake in a program.' },
+      { word: 'FILES', category: 'General', hint: 'Containers for storing data.' },
+      { word: 'FLOWS', category: 'Networking', hint: 'Sequences of packets in a network.' },
+      { word: 'GRAPH', category: 'Math', hint: 'A diagram showing relationships.' },
+      { word: 'HACKS', category: 'Security', hint: 'Unauthorized access to systems.' },
+      { word: 'INDEX', category: 'Database', hint: 'Improves speed of data retrieval.' },
+      { word: 'LINKS', category: 'Web', hint: 'References to web resources.' },
+      { word: 'NODES', category: 'Networking', hint: 'Connection points in a network.' },
+      { word: 'APIPA', category: 'Networking', hint: 'Automatic IP address assignment.' },
+      { word: 'RANGE', category: 'General', hint: 'A span between two values.' },
+      { word: 'SCOPE', category: 'Programming', hint: 'Visibility of variables.' },
+      { word: 'ALERT', category: 'Web', hint: 'A popup message in browsers.' },
+      { word: 'CISCO', category: 'Networking', hint: 'Famous networking hardware company.' },
+      { word: 'FOCUS', category: 'General', hint: 'To concentrate attention.' },
+      { word: 'HOVER', category: 'Web', hint: 'Mouse action over an element.' }
+    ];
+
+    // Select a random word object
+    const answerObj = wordList[Math.floor(Math.random() * wordList.length)];
+    let answer = answerObj.word;
+    let answerHint = answerObj.hint;
+    let answerCategory = answerObj.category;
+    let attempts = 0;
+    let studentId = "";
+    let isPlaying = false;
+
+    const input = document.getElementById('guess-input');
+    const button = document.getElementById('submit-btn');
+    const guessesDiv = document.getElementById('guesses');
+
+    // Show hint before the game starts
+    function showHint() {
+      const hintDiv = document.createElement('div');
+      hintDiv.id = 'hint-div';
+      hintDiv.style.margin = '18px 0 0 0';
+      hintDiv.style.fontSize = '18px';
+      hintDiv.style.color = '#ffb86c';
+      hintDiv.innerHTML = `<b>Hint:</b> <span style="color:#fff">${answerHint}</span>`;
+      // Only add if not already present
+      if (!document.getElementById('hint-div')) {
+        document.getElementById('wordle-section').insertBefore(hintDiv, guessesDiv);
+      }
+    }
+
+    // Show modal
+    function showModal(message, callback) {
+      // Support HTML content in the modal for QR codes
+      document.getElementById('modal-message').innerHTML = message;
+      document.getElementById('modal').style.display = 'block';
+      document.getElementById('modal-overlay').style.display = 'block';
+      document.querySelector('#modal button').focus(); // Focus the OK button
+
+      // Optional callback for modal close
+      if (callback) {
+        document.querySelector('#modal button').onclick = function() {
+          closeModal();
+          callback();
+        };
+      } else {
+        document.querySelector('#modal button').onclick = closeModal;
+      }
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+      document.getElementById('modal-overlay').style.display = 'none';
+
+      // Return focus to the appropriate input field
+      if (document.getElementById('login-section').style.display !== 'none') {
+        document.getElementById('student-id').focus(); // Focus on ID input
+      } else {
+        document.getElementById('guess-input').focus(); // Focus on guess input
+      }
+    }
+
+    // Start Game
+    function startGame() {
+      const idInput = document.getElementById('student-id').value.trim();
+
+      if (isPlaying) {
+        showModal("You are already playing. Use 'New Round' or 'New Player' buttons.");
+      } else {
+        if (!/^\d{9}$/.test(idInput) && idInput.toLowerCase() !== "admin" && idInput.toLowerCase() !== "user") {
+          showModal("Please enter a valid 9-digit ID.");
+          return;
+        }
+
+        studentId = idInput.toLowerCase();
+        isPlaying = true;
+
+        if (studentId === "admin") {
+          document.getElementById('login-section').style.display = 'none';
+          displayAdminButtons(); // Show admin buttons
+        } else {
+          document.getElementById('login-section').style.display = 'none';
+          document.getElementById('wordle-section').style.display = 'block';
+          input.disabled = false;
+          button.disabled = false;
+          input.focus();
+          showHint(); // Show the hint when the game starts
+        }
+      }
+    }
+
+    // Display admin buttons
+    function displayAdminButtons() {
+      const container = document.querySelector('.container');
+      container.innerHTML = `
+        <h1 style="color: #00000; margin-bottom: 20px;">Admin Panel</h1>
+        <div style="display: flex; flex-direction: column; gap: 15px; align-items: center; margin-top: 20px;">
+          <button onclick="viewSavedResults()" style="width: 220px;">View Saved Results</button>
+          <button onclick="clearSavedResults()" style="width: 220px;">Clear Saved Results</button>
+          <button onclick="downloadCSV()" style="width: 220px;">Download Results as CSV</button>
+          <button onclick="backToGame()" style="width: 220px;">Back to Login</button>
+        </div>
+      `;
+    }
+
+    // Function to go back to the game
+    function backToGame() {
+      // Reload the page to reset everything to the initial state
+      location.reload();
+    }
+
+    // Reset the game for a new round
+    function resetGame() {
+      attempts = 0;
+      const newObj = wordList[Math.floor(Math.random() * wordList.length)];
+      answer = newObj.word;
+      answerHint = newObj.hint;
+      answerCategory = newObj.category;
+      guessesDiv.innerHTML = ''; // Clear previous guesses
+      input.value = ''; // Clear input field
+      button.disabled = false;
+      input.disabled = false;
+      input.focus();
+      // Update hint
+      const oldHint = document.getElementById('hint-div');
+      if (oldHint) oldHint.remove();
+      showHint();
+    }
+
+    // Switch to a new player
+    function switchPlayer() {
+      document.getElementById('login-section').style.display = 'block';
+      document.getElementById('wordle-section').style.display = 'none';
+      isPlaying = false;
+      studentId = ""; // Clear the current student ID
+      attempts = 0; // Reset attempts counter
+      input.value = ''; // Clear input field
+      guessesDiv.innerHTML = ''; // Clear previous guesses
+      button.disabled = true;
+      input.disabled = true;
+
+      // Clear and focus the ID input field
+      const idInput = document.getElementById('student-id');
+      idInput.value = '';
+      idInput.focus();
+    }
+
+    // Handle Guess
+    function handleGuess() {
+      const guess = input.value.trim().toUpperCase();
+      if (guess.length !== 5 || !/^[A-Z]+$/.test(guess)) {
+        showModal("Please enter exactly 5 letters.");
+        return;
+      }
+
+      displayGuess(guess);
+      input.value = '';
+      attempts++;
+
+      // Always save the answer (the correct word) in the result
+      if (guess === answer) {
+        createParticles('#28a745');
+        setTimeout(() => {
+          showModal(`🎉 Well done ${studentId}! You guessed the word!`);
+          saveResultLocally("Win", guess, answer);
+        }, 1000);
+        button.disabled = true;
+        input.disabled = true;
+      } else if (attempts >= 6) {
+        createParticles('#dc3545');
+        setTimeout(() => {
+          showModal(`Game over ${studentId}. The word was: ${answer}`);
+          saveResultLocally("Lose", guess, answer);
+        }, 1000);
+        button.disabled = true;
+        input.disabled = true;
+      }
+    }
+
+    // Button Click
+    button.onclick = handleGuess;
+
+    // Keypress - Enter
+    input.addEventListener("keypress", function (event) {
+      if (event.key === "Enter" && !button.disabled) {
+        event.preventDefault();
+        handleGuess();
+      }
+    });
+
+    // Close modal with Enter key
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Enter" && document.getElementById('modal').style.display === 'block') {
+        event.preventDefault();
+        closeModal();
+      }
+    });
+
+    // Start game with Enter key when entering ID
+    document.getElementById('student-id').addEventListener("keypress", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        startGame();
+      }
+    });
+
+    // Display Guess Logic
+    function displayGuess(guess) {
+      const row = document.createElement('div');
+      row.className = 'guess-row';
+      const guessLetters = guess.split('');
+      const answerLetters = answer.split('');
+      let letterCounts = {};
+
+      // Count occurrences of each letter in the answer
+      answerLetters.forEach(letter => {
+        letterCounts[letter] = (letterCounts[letter] || 0) + 1;
+      });
+
+      // First pass: Check for correct position (green)
+      guessLetters.forEach((letter, index) => {
+        const span = document.createElement('span');
+        span.className = 'letter';
+        span.textContent = letter;
+
+        if (letter === answer[index] && letterCounts[letter] > 0) {
+          span.style.backgroundColor = 'green';
+          span.style.color = 'white';
+          letterCounts[letter]--;
+        }
+
+        row.appendChild(span);
+      });
+
+      guessesDiv.appendChild(row); // Append the row before further processing
+
+      // Second pass: Check for letters in the word but wrong position (orange)
+      guessLetters.forEach((letter, index) => {
+        const span = guessesDiv.querySelectorAll('.guess-row:last-child .letter')[index];
+
+        if (span.style.backgroundColor !== 'green' && answer.includes(letter) && letterCounts[letter] > 0) {
+          span.style.backgroundColor = 'orange';
+          span.style.color = 'white';
+          letterCounts[letter]--;
+        }
+      });
+
+      // Third pass: Letters not in the word (gray)
+      guessLetters.forEach((letter, index) => {
+        const span = guessesDiv.querySelectorAll('.guess-row:last-child .letter')[index];
+
+        if (span.style.backgroundColor === '') {
+          span.style.backgroundColor = 'lightgray';
+          span.style.color = 'black';
+        }
+      });
+    }
+
+    // Send Result to Sheet
+    const googleScriptURL = "https://script.google.com/macros/library/d/1capetL1Qov5qihmooHUrcaTRsEvI0S1EC9z3seLWL1n0Yy5E33Lnq4qF/1"; // Replace with your Google Apps Script URL
+
+    function sendResultToSheet(result) {
+      fetch(googleScriptURL, {
+        method: "POST",
+        body: JSON.stringify({
+          universityId: studentId,
+          result: result,
+          attempts: attempts
+        }),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+      .then(response => response.json())
+      .then(data => console.log("Result saved:", data))
+      .catch(error => console.error("Error saving result:", error));
+    }
+
+    function createParticles(color) {
+      const container = document.getElementById('particle-container');
+      container.innerHTML = ''; // Clear previous particles
+
+      for (let i = 0; i < 50; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.backgroundColor = color;
+
+        // Randomize particle position and animation
+        particle.style.left = `${Math.random() * 100}%`;
+        particle.style.top = `${Math.random() * 100}%`;
+        particle.style.setProperty('--x', `${(Math.random() - 0.5) * 300}px`);
+        particle.style.setProperty('--y', `${(Math.random() - 0.5) * 300}px`);
+
+        container.appendChild(particle);
+      }
+
+      // Remove particles after animation
+      setTimeout(() => {
+        container.innerHTML = '';
+      }, 1500);
+    }
+
+    // Save results to local storage
+    function saveResultLocally(result, lastGuess, correctWord) {
+      try {
+        const gameData = JSON.parse(localStorage.getItem('wordleResults')) || [];
+        // Use system date in local time (not UTC)
+        const now = new Date();
+        const dateString = now.getFullYear() + '-' +
+          String(now.getMonth() + 1).padStart(2, '0') + '-' +
+          String(now.getDate()).padStart(2, '0') + ' ' +
+          String(now.getHours()).padStart(2, '0') + ':' +
+          String(now.getMinutes()).padStart(2, '0') + ':' +
+          String(now.getSeconds()).padStart(2, '0');
+        gameData.push({
+          universityId: studentId,
+          result: result,
+          attempts: attempts,
+          lastGuess: lastGuess, // Save the last guess
+          word: correctWord,    // Save the correct word
+          date: dateString      // Save system local date/time
+        });
+        localStorage.setItem('wordleResults', JSON.stringify(gameData));
+        console.log("Result saved locally:", gameData);
+      } catch (error) {
+        console.error("Error saving result locally:", error);
+      }
+    }
+
+    // Function to view saved results
+    function viewSavedResults() {
+      try {
+        const gameData = JSON.parse(localStorage.getItem('wordleResults')) || [];
+        if (gameData.length === 0) {
+          alert("No results saved yet.");
+        } else {
+          console.table(gameData); // Display results in a table format in the console
+          alert("Results saved locally. Check the console for details.");
+        }
+      } catch (error) {
+        console.error("Error retrieving saved results:", error);
+        alert("Error retrieving saved results. Check the console for details.");
+      }
+    }
+
+    // Function to clear saved results
+    function clearSavedResults() {
+      if (confirm("Are you sure you want to delete all saved results?")) {
+        localStorage.removeItem('wordleResults');
+        alert("All saved results have been deleted.");
+      }
+    }
+
+    // Add buttons to view, clear, and download saved results (admin only)
+    document.addEventListener('DOMContentLoaded', () => {
+      const container = document.querySelector('.container');
+
+      if (studentId.toLowerCase() === "admin") {
+        const viewResultsButton = document.createElement('button');
+        viewResultsButton.textContent = "View Saved Results";
+        viewResultsButton.style.marginTop = "20px";
+        viewResultsButton.onclick = viewSavedResults;
+        container.appendChild(viewResultsButton);
+
+        const clearResultsButton = document.createElement('button');
+        clearResultsButton.textContent = "Clear Saved Results";
+        clearResultsButton.style.marginTop = "10px";
+        clearResultsButton.onclick = clearSavedResults;
+        container.appendChild(clearResultsButton);
+
+        const downloadCSVButton = document.createElement('button');
+        downloadCSVButton.textContent = "Download Results as CSV";
+        downloadCSVButton.style.marginTop = "10px";
+        downloadCSVButton.onclick = downloadCSV;
+        container.appendChild(downloadCSVButton);
+      }
+    });
+
+    // Convert saved results to CSV format
+    function convertToCSV(data) {
+      const headers = ["University ID", "Result", "Attempts", "Last Guess", "Word", "Date"];
+      const rows = data.map(item => [
+        item.universityId,
+        item.result,
+        item.attempts,
+        item.lastGuess || "",
+        item.word || "",
+        item.date
+      ]);
+      const csvContent = [headers, ...rows].map(row => row.join(",")).join("\n");
+      return csvContent;
+    }
+
+    // Download results as a CSV file
+    function downloadCSV() {
+      try {
+        const gameData = JSON.parse(localStorage.getItem('wordleResults')) || [];
+        if (gameData.length === 0) {
+          alert("No results saved to download.");
+          return;
+        }
+
+        const csvContent = convertToCSV(gameData);
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "wordle_results.csv";
+        a.click();
+
+        URL.revokeObjectURL(url);
+        alert("CSV file downloaded.");
+      } catch (error) {
+        console.error("Error downloading CSV:", error);
+        alert("Error downloading CSV. Check the console for details.");
+      }
+    }
+
+  </script>
+</body>
+</html>
